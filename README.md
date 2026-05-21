@@ -7,11 +7,11 @@ Read the Whale section below if the challenge needs per-team/per-user instances.
 -->
 
 # Name
-Profile Sync
+SeeTeeEffedIn
 
 # Description
 
-CTFs are the best chance to connect with others. Find out who else is in this CTF! But make sure to make your connections fast - the DB resets every 5 mins.
+CTFs are the best chance to connect with others. Network with others in this Grey Cat the Flag! But make sure to connect fast - the world resets every 5 mins.
 
 # Author
 jloh02
@@ -21,7 +21,7 @@ jloh02
 
 # Challenge
 
-A web challenge for CVE-2026-6637.
+A web challenge for [CVE-2026-6637](https://www.postgresql.org/support/security/CVE-2026-6637/) running on Postgres 18.3. ([patch](https://github.com/postgres/postgres/commit/260e97733bf09acc448faea24fc6210411892b1a))
 
 # Local Verification
 
@@ -31,7 +31,7 @@ Run the stack and then execute:
 python solve/exploit_refint.py --base-url http://127.0.0.1:8080
 ```
 
-The exploit registers a fresh player, uses the automatically created anchor username, triggers the vulnerable cascade update, and surfaces the flag in the visible `profile_cache` field on that player's own session mirror.
+The exploit registers a fresh player with separate public-facing and private-facing usernames, updates the private-facing username through the vulnerable cascade path, and surfaces the flag in the visible `session_note` field on that player's own session mirror. Public feed handles stay clean, so other users do not see the exploit payload in normal network activity.
 
 # Automatic Reset
 

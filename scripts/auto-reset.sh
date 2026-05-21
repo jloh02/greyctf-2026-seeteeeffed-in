@@ -17,6 +17,9 @@ fi
 
 echo "auto-reset enabled; resetting database every ${interval}s"
 
+echo "applying database state on startup"
+/bin/sh /reset/reset-db.sh
+
 while true; do
   sleep "$interval"
   echo "resetting database state"
