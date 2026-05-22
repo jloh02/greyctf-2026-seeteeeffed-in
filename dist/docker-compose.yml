@@ -20,7 +20,7 @@ services:
       dockerfile: ./backend/Dockerfile
     container_name: ctf-backend
     environment:
-      DB_DSN: dbname=ctf user=<REDACT> password=<REDACT> host=db
+      DB_DSN: dbname=ctf user=app_user password=<REDACT> host=db
       FLASK_APP: app.py
       FLASK_ENV: development
       CHALLENGE_FLAG: <REDACT>

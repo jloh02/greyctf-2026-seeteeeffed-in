@@ -8,7 +8,9 @@ from flask import Flask, jsonify, request, send_from_directory
 app = Flask(__name__)
 DB_DSN = os.getenv(
     "DB_DSN",
-    "<REDACT>")
+    "dbname=ctf user=app_user password=<REDACT> host=db",
+)
+FRONTEND_DIR = os.path.join(app.root_path, "frontend")
 CHALLENGE_FLAG = os.getenv(
     "CHALLENGE_FLAG", "<REDACT>"
 )

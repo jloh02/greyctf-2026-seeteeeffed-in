@@ -216,7 +216,7 @@ def redact_compose_text(text: str) -> str:
         text,
     )
     text = re.sub(
-        r"(?i)\b(password|user|username|flag|token|secret|key)=([^ \n\"']+)",
+        r"(?i)\b(password|flag|token|secret|key)=([^ \n\"']+)",
         lambda match: f"{match.group(1)}={REDACT_TOKEN}",
         text,
     )
@@ -259,8 +259,8 @@ def redact_sql_text(text: str) -> str:
 
 def redact_python_text(text: str) -> str:
     text = re.sub(
-        r'(?s)(DB_DSN\s*=\s*os\.getenv\(\s*"DB_DSN"\s*,\s*)"(.*?)"(\s*\))',
-        lambda match: f'{match.group(1)}"{REDACT_TOKEN}"{match.group(3)}',
+        r'(DB_DSN\s*=\s*os\.getenv\(\s*"DB_DSN"\s*,\s*)"(.*?)"',
+        lambda match: f'{match.group(1)}"{redact_dsn_credentials(match.group(2))}"',
         text,
     )
     text = re.sub(
@@ -269,6 +269,14 @@ def redact_python_text(text: str) -> str:
         text,
     )
     return text
+
+
+def redact_dsn_credentials(dsn: str) -> str:
+    return re.sub(
+        r"(?i)\b(password=)([^ \n\"']+)",
+        lambda match: f"{match.group(1)}{REDACT_TOKEN}",
+        dsn,
+    )
 
 
 def copy_with_redaction(source: Path, destination: Path) -> None:

@@ -5,7 +5,7 @@ services:
     environment:
       POSTGRES_DB: ctf
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: fa4bc8e2f481cdf134b779eb1770bd317b52feb4b2fdd37ea41954fc0819977e
+      POSTGRES_PASSWORD: c38c5962deefa8484548c77cd240465b705e2818b4ff12bf284edc8c1b9942db
     volumes:
       - ./db/init.sql:/docker-entrypoint-initdb.d/001-init.sql:ro
       - postgres_data:/var/lib/postgresql
@@ -38,7 +38,7 @@ services:
       PGHOST: db
       PGDATABASE: ctf
       PGUSER: postgres
-      PGPASSWORD: fa4bc8e2f481cdf134b779eb1770bd317b52feb4b2fdd37ea41954fc0819977e
+      PGPASSWORD: c38c5962deefa8484548c77cd240465b705e2818b4ff12bf284edc8c1b9942db
       RESET_INTERVAL_SECONDS: 300
     volumes:
       - ./db/init.sql:/reset/init.sql:ro
