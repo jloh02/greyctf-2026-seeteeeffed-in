@@ -17,7 +17,7 @@ CTFs are the best chance to connect with others. Network with others in this Gre
 jloh02
 
 # Flag
-`flag{refint_c4Scad3_Upd4t3_sq1_lnject10n}`
+`grey{refint_c4Scad3_Upd4t3_sq1_lnject10n}`
 
 # Challenge
 

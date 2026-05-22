@@ -24,7 +24,7 @@ services:
       DB_DSN: dbname=ctf user=app_user password=fa4bc8e2f481cdf134b779eb1770bd317b52feb4b2fdd37ea41954fc0819977e host=db
       FLASK_APP: app.py
       FLASK_ENV: development
-      CHALLENGE_FLAG: flag{refint_c4Scad3_Upd4t3_sq1_lnject10n}
+      CHALLENGE_FLAG: grey{refint_c4Scad3_Upd4t3_sq1_lnject10n}
     ports:
       - "8080:5000"
     depends_on:
