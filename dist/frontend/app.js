@@ -1,4 +1,5 @@
 const SESSION_STORAGE_KEY = "profile-sync-session-token";
+const TEAM_TOKEN_STORAGE_KEY = "profile-sync-team-token";
 export function getSessionToken() {
   return window.localStorage.getItem(SESSION_STORAGE_KEY);
 }
@@ -7,6 +8,22 @@ export function setSessionToken(token) {
     window.localStorage.setItem(SESSION_STORAGE_KEY, token);
   } else {
     window.localStorage.removeItem(SESSION_STORAGE_KEY);
+  }
+}
+export function getTeamToken() {
+  const params = new URLSearchParams(window.location.search);
+  const queryToken = params.get("team_token") || params.get("token");
+  if (queryToken) {
+    setTeamToken(queryToken);
+    return queryToken;
+  }
+  return window.localStorage.getItem(TEAM_TOKEN_STORAGE_KEY);
+}
+export function setTeamToken(token) {
+  if (token) {
+    window.localStorage.setItem(TEAM_TOKEN_STORAGE_KEY, token);
+  } else {
+    window.localStorage.removeItem(TEAM_TOKEN_STORAGE_KEY);
   }
 }
 export function setStatus(target, message, tone = "") {
@@ -51,6 +68,10 @@ export async function api(path, options = {}) {
   const sessionToken = getSessionToken();
   if (sessionToken) {
     headers["X-Session-Token"] = sessionToken;
+  }
+  const teamToken = getTeamToken();
+  if (teamToken) {
+    headers["X-Team-Token"] = teamToken;
   }
   if (options.body) {
     headers["Content-Type"] = "application/json";

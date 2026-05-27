@@ -23,7 +23,12 @@ FILES_TO_COPY = [
     SCRIPTS_DIR / "reset-db.sh",
 ]
 
-COMPOSE_PATTERNS = ("docker-compose*.yml", "docker-compose*.yaml")
+COMPOSE_PATTERNS = (
+    "compose.yml",
+    "compose.yaml",
+    "docker-compose*.yml",
+    "docker-compose*.yaml",
+)
 BACKEND_EXCLUDE_DIRS = {"__pycache__"}
 BACKEND_EXCLUDE_SUFFIXES = {".pyc", ".pyo"}
 REDACT_TOKEN = "<REDACT>"

@@ -2,8 +2,9 @@ import os
 from contextlib import closing
 
 import psycopg2
+import requests
 from psycopg2 import errors
-from flask import Flask, jsonify, request, send_from_directory
+from flask import Flask, g, jsonify, request, send_from_directory
 
 app = Flask(__name__)
 DB_DSN = os.getenv(
@@ -14,6 +15,130 @@ FRONTEND_DIR = os.path.join(app.root_path, "frontend")
 CHALLENGE_FLAG = os.getenv(
     "CHALLENGE_FLAG", "flag{refint_cascade_update_sql_injection}"
 )
+CTFD_URL = os.getenv("CTFD_URL", "").rstrip("/")
+CTFD_RESOLVE_URL = os.getenv("CTFD_RESOLVE_URL", "").rstrip("/")
+CTFD_TEAM_TOKEN_PLUGIN_SECRET = os.getenv(
+    "CTFD_TEAM_TOKEN_PLUGIN_SECRET",
+    os.getenv("TEAM_TOKEN_PLUGIN_SECRET", ""),
+)
+CTFD_CHALLENGE_ID = os.getenv(
+    "CTFD_CHALLENGE_ID",
+    os.getenv("TEAM_TOKEN_CHALLENGE_ID", ""),
+)
+TEAM_TOKEN_GATE_ENABLED = os.getenv("TEAM_TOKEN_GATE_ENABLED", "")
+TEAM_TOKEN_RESOLVE_TIMEOUT_SECONDS = float(
+    os.getenv("TEAM_TOKEN_RESOLVE_TIMEOUT_SECONDS", "5")
+)
+
+
+def ctfd_resolve_url() -> str:
+    if CTFD_RESOLVE_URL:
+        return CTFD_RESOLVE_URL
+    if CTFD_URL:
+        if "/plugins/team-token/api/v1/resolve" in CTFD_URL:
+            return CTFD_URL
+        return f"{CTFD_URL}/plugins/team-token/api/v1/resolve"
+    return ""
+
+
+def team_token_gate_enabled() -> bool:
+    value = TEAM_TOKEN_GATE_ENABLED.lower()
+    if value in {"0", "false", "no", "off"}:
+        return False
+    if value in {"1", "true", "yes", "on"}:
+        return True
+    return bool(ctfd_resolve_url() and CTFD_TEAM_TOKEN_PLUGIN_SECRET)
+
+
+def extract_team_token() -> str:
+    token = request.headers.get("X-Team-Token", "")
+    if token:
+        return token.strip()
+
+    token = request.args.get("team_token") or request.args.get("token") or ""
+    if token:
+        return token.strip()
+
+    payload = request.get_json(silent=True) or {}
+    token = payload.get("team_token") or payload.get("token") or ""
+    return token.strip() if isinstance(token, str) else ""
+
+
+def resolve_team_token(token: str) -> dict:
+    response = requests.get(
+        ctfd_resolve_url(),
+        params={"token": token},
+        headers={"Authorization": f"Bearer {CTFD_TEAM_TOKEN_PLUGIN_SECRET}"},
+        timeout=TEAM_TOKEN_RESOLVE_TIMEOUT_SECONDS,
+    )
+    response.raise_for_status()
+    return response.json()
+
+
+@app.before_request
+def require_unsolved_team_token():
+    is_api_request = request.path == "/api" or request.path.startswith("/api/")
+    if not is_api_request or not team_token_gate_enabled():
+        return None
+
+    if not ctfd_resolve_url() or not CTFD_TEAM_TOKEN_PLUGIN_SECRET:
+        return (
+            jsonify(
+                {"status": "error", "message": "Team token gate is not configured."}
+            ),
+            503,
+        )
+
+    token = extract_team_token()
+    if not token:
+        return (
+            jsonify({"status": "error", "message": "Missing team token."}),
+            401,
+        )
+
+    try:
+        result = resolve_team_token(token)
+    except requests.RequestException:
+        return (
+            jsonify({"status": "error", "message": "Could not verify team token."}),
+            502,
+        )
+
+    if not result.get("valid"):
+        return jsonify({"status": "error", "message": "Invalid team token."}), 403
+
+    if "solved" not in result:
+        return (
+            jsonify(
+                {
+                    "status": "error",
+                    "message": "Team token resolve response is missing solve status.",
+                }
+            ),
+            502,
+        )
+
+    if CTFD_CHALLENGE_ID and str(result.get("challenge_id")) != str(
+        CTFD_CHALLENGE_ID
+    ):
+        return (
+            jsonify(
+                {
+                    "status": "error",
+                    "message": "Team token is for a different challenge.",
+                }
+            ),
+            403,
+        )
+
+    if result.get("solved"):
+        return (
+            jsonify({"status": "error", "message": "Challenge already solved."}),
+            403,
+        )
+
+    g.team_token = result
+    return None
 
 
 def get_session_token() -> str | None:

@@ -24,8 +24,12 @@ services:
       FLASK_APP: app.py
       FLASK_ENV: development
       CHALLENGE_FLAG: <REDACT>
+      CTFD_RESOLVE_URL: ${CTFD_RESOLVE_URL:-https://ctfd.nusgreyhats.org/plugins/team-token/api/v1/resolve}
+      CTFD_TEAM_TOKEN_PLUGIN_SECRET: <REDACT>
+      CTFD_CHALLENGE_ID: ${CTFD_CHALLENGE_ID:-23}
+      TEAM_TOKEN_GATE_ENABLED: <REDACT>
     ports:
-      - "8080:5000"
+      - "34567:5000"
     depends_on:
       db:
         condition: service_healthy
